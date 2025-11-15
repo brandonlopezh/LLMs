@@ -1,4 +1,4 @@
-# Educational LLM Response Evaluator for Raina
+# Educational LLM Response Evaluator
 A comprehensive tool for evaluating AI-generated educational content quality, designed specifically for conversational educational chatbots like Raina.
 
 ## What It Does
@@ -13,7 +13,7 @@ Evaluates LLM responses for educational prompts based on multiple criteria:
 - ✅ **Auto-incrementing results files** (results_1.csv, results_2.csv, etc.)
 - ✅ **Full response evaluation** - Analyzes actual LLM outputs, not just prompts
 - ✅ **Educational Quality scoring** - Specialized metric for educational content
-- ✅ **Conversational tone support** - Appropriate for chatbots like Raina
+- ✅ **Conversational tone support** - Appropriate for chatbots
 - ✅ **Comprehensive test data** - 30 test cases with good and poor responses
 - ✅ **Evaluator Quality tracking** - Measures how well the evaluator performs
 - ✅ **Detailed CSV output** - Includes prompts, responses, and evaluation notes
@@ -31,7 +31,7 @@ python3 evaluate.py
 ## Example Output
 
 ```
-LLM RESPONSE QUALITY EVALUATOR FOR RAINA
+LLM RESPONSE QUALITY EVALUATOR
 ========================================================
 
 Evaluating 30 LLM responses...
@@ -58,7 +58,7 @@ Detailed results saved to: results_6.csv
 Evaluator Quality: 30/30 (100.0%)
 
 This demonstrates:
-  ✓ AI response quality assessment for Raina chatbot
+  ✓ AI response quality assessment
   ✓ Educational content evaluation with conversational tone
   ✓ Multi-criteria evaluation framework
   ✓ Safety and appropriateness checking
@@ -123,4 +123,4 @@ The evaluator checks for:
 
 ---
 
-*Built to showcase advanced LLM evaluation capabilities for educational AI applications like Raina chatbot*
+*Built to showcase advanced LLM evaluation capabilities for educational AI applications
