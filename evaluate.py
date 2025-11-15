@@ -1,69 +1,8 @@
 import pandas as pd
 import csv
 
-# Sample test data - educational prompts with AI responses
-test_data = [
-    {
-        "prompt": "Explain photosynthesis to a 5th grader",
-        "grade_level": "5th",
-        "response": "Photosynthesis is how plants make their own food. They use sunlight, water, and carbon dioxide (a gas in the air) to create sugar for energy. The green color in leaves, called chlorophyll, helps capture sunlight. Plants release oxygen as a byproduct, which we breathe!",
-        "expected_quality": "Good"
-    },
-    {
-        "prompt": "Create 3 multiplication problems for 3rd grade",
-        "grade_level": "3rd",
-        "response": "1) 7 × 8 = ?\n2) 12 × 15 = ?\n3) 25 × 34 = ?\nShow your work for each problem.",
-        "expected_quality": "Needs Review"
-    },
-    {
-        "prompt": "Write a short summary of the American Revolution",
-        "grade_level": "8th",
-        "response": "The American Revolution (1775-1783) was when American colonies fought for independence from British rule. Key events included the Boston Tea Party, battles at Lexington and Concord, and the signing of the Declaration of Independence in 1776. George Washington led the Continental Army to victory, establishing the United States as an independent nation.",
-        "expected_quality": "Excellent"
-    },
-    {
-        "prompt": "Explain fractions using pizza",
-        "grade_level": "4th",
-        "response": "Imagine a pizza cut into 8 equal slices. If you eat 3 slices, you ate 3/8 of the pizza. The bottom number (8) shows how many total pieces, and the top number (3) shows how many you took. If your friend eats 2 slices, they ate 2/8. Together you ate 5/8 of the pizza!",
-        "expected_quality": "Excellent"
-    },
-    {
-        "prompt": "Describe the water cycle",
-        "grade_level": "6th",
-        "response": "The water cycle involves evaporation (water turning to vapor), condensation (vapor forming clouds), precipitation (rain/snow falling), and collection (water gathering in oceans/lakes). This process repeats continuously, recycling Earth's water supply.",
-        "expected_quality": "Good"
-    },
-    {
-        "prompt": "Create a vocabulary quiz for middle school",
-        "grade_level": "7th",
-        "response": "1. Ubiquitous (adj) - seeming to be everywhere\n2. Ephemeral (adj) - lasting a very short time\n3. Pragmatic (adj) - dealing with things sensibly and realistically\n4. Verbose (adj) - using more words than needed\n5. Ambiguous (adj) - open to multiple interpretations",
-        "expected_quality": "Good"
-    },
-    {
-        "prompt": "Explain gravity simply",
-        "grade_level": "5th",
-        "response": "Gravity is a force that pulls objects toward each other. Earth's gravity pulls you down toward the ground. The bigger an object is, the stronger its gravity. That's why the Moon orbits Earth and Earth orbits the Sun - gravity keeps them together!",
-        "expected_quality": "Excellent"
-    },
-    {
-        "prompt": "Write a persuasive essay intro about recycling",
-        "grade_level": "9th",
-        "response": "Every year, millions of tons of waste pollute our planet, but there's a simple solution within everyone's reach: recycling. By taking a few extra seconds to sort our trash, we can significantly reduce landfill waste, conserve natural resources, and protect ecosystems for future generations.",
-        "expected_quality": "Excellent"
-    },
-    {
-        "prompt": "Teach basic addition to kindergarten",
-        "grade_level": "K",
-        "response": "Let's use our fingers! If you have 2 apples in one hand and 3 apples in the other hand, how many apples do you have total? Count them together: 1, 2, 3, 4, 5! So 2 + 3 = 5. Try it with your fingers!",
-        "expected_quality": "Excellent"
-    },
-    {
-        "prompt": "Explain DNA to high schoolers",
-        "grade_level": "10th",
-        "response": "DNA (deoxyribonucleic acid) is the molecule that contains genetic instructions for all living organisms. Its double helix structure consists of nucleotide base pairs (adenine-thymine, guanine-cytosine) that encode genes, which determine traits like eye color and height.",
-        "expected_quality": "Good"
-    }
-]
+# Read test data from CSV file instead of hardcoding it
+test_data = pd.read_csv('test_prompts.csv').to_dict('records')
 
 def evaluate_response(prompt, response, grade_level):
     """
