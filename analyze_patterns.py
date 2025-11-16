@@ -6,15 +6,19 @@ Demonstrates ability to identify patterns in LLM quality issues and prioritize t
 import pandas as pd
 import os
 from collections import Counter
+import matplotlib.pyplot as plt
 
 def find_latest_results():
     """Find the most recent results file"""
-    results_files = [f for f in os.listdir('.') if f.startswith('results_') and f.endswith('.csv')]
+    results_dir = 'results'
+    if not os.path.exists(results_dir):
+        return None
+    results_files = [f for f in os.listdir(results_dir) if f.startswith('results_') and f.endswith('.csv')]
     if not results_files:
         return None
     # Sort by number in filename
     results_files.sort(key=lambda x: int(x.split('_')[1].split('.')[0]), reverse=True)
-    return results_files[0]
+    return os.path.join(results_dir, results_files[0])
 
 def analyze_quality_patterns(df):
     """Identify common quality issues and patterns"""
@@ -173,6 +177,118 @@ def generate_summary_report(df, filename):
     
     print("=" * 70)
 
+def create_analysis_dashboard(df, results_filename):
+    """Generate visual dashboard for pattern analysis"""
+    
+    print("\n" + "=" * 70)
+    print("GENERATING ANALYSIS DASHBOARD")
+    print("=" * 70)
+    
+    try:
+        # Create analysis_dashboards folder if it doesn't exist
+        os.makedirs('analysis_dashboards', exist_ok=True)
+        
+        fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+        fig.suptitle('Pattern Analysis Dashboard', fontsize=16, fontweight='bold')
+        
+        # 1. Issue Priority Distribution
+        priority_counts = {'HIGH': 0, 'MEDIUM': 0, 'LOW': 0}
+        
+        # Count priorities
+        safety_issues = df[df['Notes'].str.contains('inappropriate language', case=False, na=False)]
+        mismatches = df[~df['Matches_Expected']]
+        low_performers = df[df['Educational_Quality'] < 0.7]
+        good_responses = df[df['Overall_Rating'] == 'Good']
+        
+        if len(safety_issues) > 0 or len(mismatches) > 5:
+            priority_counts['HIGH'] += 1
+        if len(low_performers) > 0:
+            priority_counts['MEDIUM'] += 1
+        if len(good_responses) > 0:
+            priority_counts['LOW'] += 1
+        
+        colors_priority = {'HIGH': 'salmon', 'MEDIUM': 'orange', 'LOW': 'lightgreen'}
+        priorities = [k for k, v in priority_counts.items() if v > 0]
+        counts = [v for v in priority_counts.values() if v > 0]
+        bar_colors = [colors_priority[p] for p in priorities]
+        
+        axes[0, 0].bar(priorities, counts, color=bar_colors)
+        axes[0, 0].set_title('Issue Priority Distribution', fontweight='bold')
+        axes[0, 0].set_ylabel('Number of Issues')
+        axes[0, 0].set_xlabel('Priority Level')
+        for i, v in enumerate(counts):
+            axes[0, 0].text(i, v + 0.05, str(v), ha='center', fontweight='bold')
+        
+        # 2. Quality Threshold Analysis
+        thresholds = ['Poor\n(< 0.3)', 'Needs Work\n(0.3-0.5)', 'Acceptable\n(0.5-0.7)', 'Good\n(0.7-0.9)', 'Excellent\n(≥ 0.9)']
+        threshold_counts = [
+            len(df[df['Educational_Quality'] < 0.3]),
+            len(df[(df['Educational_Quality'] >= 0.3) & (df['Educational_Quality'] < 0.5)]),
+            len(df[(df['Educational_Quality'] >= 0.5) & (df['Educational_Quality'] < 0.7)]),
+            len(df[(df['Educational_Quality'] >= 0.7) & (df['Educational_Quality'] < 0.9)]),
+            len(df[df['Educational_Quality'] >= 0.9])
+        ]
+        threshold_colors = ['darkred', 'salmon', 'orange', 'lightblue', 'lightgreen']
+        
+        axes[0, 1].barh(thresholds, threshold_counts, color=threshold_colors)
+        axes[0, 1].set_title('Response Quality Thresholds', fontweight='bold')
+        axes[0, 1].set_xlabel('Number of Responses')
+        for i, v in enumerate(threshold_counts):
+            if v > 0:
+                axes[0, 1].text(v + 0.2, i, str(v), va='center')
+        
+        # 3. Evaluator Calibration
+        match_rate = (df['Matches_Expected'].sum() / len(df)) * 100
+        mismatch_rate = 100 - match_rate
+        
+        axes[1, 0].pie([match_rate, mismatch_rate], 
+                      labels=[f'Accurate\n{match_rate:.1f}%', f'Needs Calibration\n{mismatch_rate:.1f}%'],
+                      colors=['lightgreen', 'salmon'],
+                      autopct='',
+                      startangle=90)
+        axes[1, 0].set_title('Evaluator Calibration Status', fontweight='bold')
+        
+        # 4. Top Issues Summary
+        issue_types = []
+        issue_counts = []
+        
+        if len(safety_issues) > 0:
+            issue_types.append('Safety\nConcerns')
+            issue_counts.append(len(safety_issues))
+        if len(mismatches) > 0:
+            issue_types.append('Rating\nMismatches')
+            issue_counts.append(len(mismatches))
+        if len(low_performers) > 0:
+            issue_types.append('Low Quality\nResponses')
+            issue_counts.append(len(low_performers))
+        
+        if issue_types:
+            axes[1, 1].barh(issue_types, issue_counts, color=['darkred', 'orange', 'gold'][:len(issue_types)])
+            axes[1, 1].set_title('Issues Requiring Attention', fontweight='bold')
+            axes[1, 1].set_xlabel('Count')
+            for i, v in enumerate(issue_counts):
+                axes[1, 1].text(v + 0.3, i, str(v), va='center', fontweight='bold')
+        else:
+            axes[1, 1].text(0.5, 0.5, '✓ No Critical Issues', 
+                          ha='center', va='center', fontsize=14, color='green', fontweight='bold')
+            axes[1, 1].set_xlim(0, 1)
+            axes[1, 1].set_ylim(0, 1)
+            axes[1, 1].axis('off')
+        
+        plt.tight_layout()
+        
+        # Extract just the filename without path and extension
+        base_filename = os.path.basename(results_filename).replace('.csv', '')
+        dashboard_filename = f'analysis_dashboards/{base_filename}_analysis.png'
+        
+        plt.savefig(dashboard_filename, dpi=150, bbox_inches='tight')
+        print(f"✓ Analysis dashboard saved to: {dashboard_filename}")
+        
+    except Exception as e:
+        print(f"⚠ Could not generate analysis dashboard: {e}")
+    
+    print("=" * 70)
+
 def main():
     # Find the latest results file
     results_file = find_latest_results()
@@ -190,6 +306,7 @@ def main():
     issues, low_performers, mismatches = analyze_quality_patterns(df)
     priority_queue = prioritize_issues(df, low_performers, mismatches)
     generate_summary_report(df, results_file)
+    create_analysis_dashboard(df, results_file)
     
     print("\n✅ Pattern analysis complete!")
     print("\nThis demonstrates:")

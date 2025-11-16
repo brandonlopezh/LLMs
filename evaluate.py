@@ -3,15 +3,46 @@ import csv
 import os
 import matplotlib.pyplot as plt
 
-# Read test data from CSV file instead of hardcoding it
-test_data = pd.read_csv('test_prompts.csv').to_dict('records')
+# Prompt user to select which CSV file to analyze
+print("=" * 60)
+print("SELECT TEST DATA FILE")
+print("=" * 60)
+print("\n1. All Responses (Good and Poor) - 30 tests")
+print("2. Poor Responses Only - 15 tests")
+print("3. Great Responses Only - 16 tests")
+print("4. Mixed Responses (50/50) - 16 tests")
+print()
+
+while True:
+    choice = input("Enter your choice (1-4): ").strip()
+    if choice == "1":
+        csv_file = 'prompts/test_prompts.csv'
+        print("\n✓ Selected: All Responses (30 tests)\n")
+        break
+    elif choice == "2":
+        csv_file = 'prompts/poor_responses.csv'
+        print("\n✓ Selected: Poor Responses Only (15 tests)\n")
+        break
+    elif choice == "3":
+        csv_file = 'prompts/great_responses.csv'
+        print("\n✓ Selected: Great Responses Only (16 tests)\n")
+        break
+    elif choice == "4":
+        csv_file = 'prompts/mixed_responses.csv'
+        print("\n✓ Selected: Mixed Responses (16 tests)\n")
+        break
+    else:
+        print("❌ Invalid choice. Please enter 1, 2, 3, or 4.\n")
+
+# Read test data from selected CSV file
+test_data = pd.read_csv(csv_file).to_dict('records')
 
 def get_next_results_filename():
     """Find the next available results filename"""
     counter = 1
-    while os.path.exists(f'results_{counter}.csv'):
+    while os.path.exists(f'results/results_{counter}.csv'):
         counter += 1
-    return f'results_{counter}.csv'
+    return f'results/results_{counter}.csv'
 
 def evaluate_response(prompt, response, grade_level):
     """
@@ -352,7 +383,7 @@ try:
             axes[1, 1].text(i, v + 0.2, str(v), ha='center', fontweight='bold')
     
     plt.tight_layout()
-    dashboard_filename = results_filename.replace('.csv', '_dashboard.png')
+    dashboard_filename = results_filename.replace('.csv', '_dashboard.png').replace('results/', 'dashboards/')
     plt.savefig(dashboard_filename, dpi=150, bbox_inches='tight')
     print(f"✓ Dashboard saved to: {dashboard_filename}")
     
